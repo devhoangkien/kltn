@@ -1,0 +1,166 @@
+<template>
+  <div class="category">
+    <placeholder :data="categoriesStore.sorted.length" :fetching="categoriesStore.fetching"
+      :i18n-key="LanguageKey.CATEGORIES_PLACEHOLDER">
+      <template #loading>
+        <ul class="category-list-skeleton" key="skeleton">
+          <li v-for="item in 14" :key="item" class="item">
+            <skeleton-line />
+          </li>
+        </ul>
+      </template>
+      <template #default>
+        <div class="category-list" key="list">
+          <router-link class="item" :title="`${categoryEnName(category)} | ${category.description}`"
+            :to="getCategoryFlowRoute(category.slug)" :key="index" v-for="(category, index) in categoriesStore.sorted">
+            <i class="iconfont" :class="getCategoryIcon(category)" />
+            <span class="name">
+              <i18n :zh="category.name" :en="categoryEnName(category)" :vi="categoryViName(category)" />
+              <span class="count">({{ category.articles_count || 0 }})</span>
+            </span>
+          </router-link>
+        </div>
+      </template>
+    </placeholder>
+  </div>
+</template>
+
+<script lang="ts">
+  import { defineComponent } from 'vue'
+import { useCategoriesStore, categoryEnName, categoryViName, Category } from '/@/stores/categories'
+  import { LanguageKey } from '/@/language'
+  import { getCategoryFlowRoute } from '/@/transforms/route'
+  import { getExtendValue } from '/@/transforms/state'
+
+  export default defineComponent({
+    name: 'DesktopAsideCategory',
+    setup() {
+      const categoriesStore = useCategoriesStore()
+      const getCategoryIcon = (category: Category) => {
+        return getExtendValue(category.extends || [], 'icon') || 'icon-category'
+      }
+      return {
+        LanguageKey,
+        categoriesStore,
+        categoryEnName,
+        categoryViName,
+        getCategoryIcon,
+        getCategoryFlowRoute
+      }
+    }
+  })
+</script>
+
+<style lang="scss" scoped>
+  @use 'sass:math';
+  @import 'src/styles/variables.scss';
+  @import 'src/styles/mixins.scss';
+
+  .category {
+    display: flex;
+    margin-bottom: 0;
+    overflow-y: scroll;
+    
+    overscroll-behavior: contain;
+    width: 100%;
+    border-top: $gap solid transparent;
+    // border-bottom: $gap solid transparent;
+
+    .category-list-skeleton {
+      flex-wrap: wrap;
+      list-style: none;
+      padding: 0;
+      margin: 0 $gap;
+
+      .item {
+        width: calc(50% - #{math.div($gap, 2)});
+        height: 1.4em;
+        margin-right: 0;
+        margin-bottom: $gap;
+
+        &:nth-child(2n-1) {
+          margin-right: $gap;
+        }
+        &:nth-child(4n-1) {
+          width: 30%;
+          margin-right: $gap;
+        }
+        &:nth-child(4n) {
+          width: calc(70% - #{$gap});
+        }
+        &:nth-last-child(1),
+        &:nth-last-child(2) {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    .category-list {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      margin-left: $gap;
+      margin-top: -$gap;
+
+      .item {
+        $height: 2em;
+        display: flex;
+        margin-right: $sm-gap;
+        margin-top: $gap;
+        height: $height;
+        line-height: $height;
+        font-size: $font-size-h6;
+        font-family: $font-family-normal;
+        @include radius-box($xs-radius);
+
+        .iconfont {
+          width: 2em;
+          text-align: center;
+          background-color: $module-bg-darker-1;
+          @include background-transition();
+        }
+
+        .name {
+          display: block;
+          padding: 0 $sm-gap;
+          @include background-transition();
+
+          .count {
+            margin-left: $xs-gap;
+            color: $text-secondary;
+          }
+        }
+
+        &.link-active {
+          .iconfont {
+            color: $module-bg-opaque;
+            background-color: $primary-translucent;
+          }
+          .name {
+            font-weight: bold;
+            color: $text-reversal;
+            background-color: $primary;
+            .count {
+              color: $text-reversal;
+            }
+          }
+        }
+
+        &:not(.link-active) {
+          .name {
+            background-color: $module-bg-hover;
+          }
+
+          &:hover {
+            .iconfont {
+              background-color: $module-bg-hover;
+            }
+            .name {
+              background-color: $module-bg-darker-3;
+            }
+          }
+        }
+      }
+    }
+  }
+</style>

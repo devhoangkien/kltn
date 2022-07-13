@@ -1,0 +1,5 @@
+# robots.txt for cdn domain
+User-agent: *
+Disallow: /
+Sitemap: https://aio.news/sitemap.xml
+Sitemap: https://aio.news/sitemap
